@@ -8,6 +8,7 @@
         label-width="100px"
         class="demo-ruleForm"
       >
+      
         <el-form-item label="班级名称" prop="name">
           <el-input v-model="ruleForm.name"></el-input>
         </el-form-item>

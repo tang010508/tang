@@ -7,6 +7,7 @@ import Bclass from './views/Bclass.vue'
 import Bdormitory from './views/Bdormitory.vue'
 import Bstudent from './views/Bstudent.vue'
 
+
 Vue.use(Router)
 
 export default new Router({
@@ -38,6 +39,6 @@ export default new Router({
           component:Bstudent
         }
       ]
-    }
+    },
   ]
 })

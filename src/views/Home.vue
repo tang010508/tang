@@ -36,7 +36,7 @@ export default {
   data() {
     return {
       username: "admin",
-      password: "accpyy",
+      password: "",
       imgurl: "",
       uuid: "",
       code: "",

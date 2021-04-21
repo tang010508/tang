@@ -1,443 +1,334 @@
 <template>
   <div>
-    <div class="nav-top">
-      <label class="lab">宿舍栋号</label>
-      <Select style="width:200px" class="sele" v-model="buildingNo">
-        <Option v-for="(item,key) in list" :key="key" :value="item.dictSort">{{item.dictLabel}}</Option>
-      </Select>
-      <label class="lab">楼层</label>
-      <Select style="width:200px" class="sele" v-model="storey">
-        <Option v-for="(item,key) in list2" :key="key" :value="item.dictSort">{{item.dictLabel}}</Option>
-      </Select>
-      <label class="lab">宿舍号</label>
-      <Input placeholder="请输入宿舍号" style="width: 180px" v-model="dormitoryNo"/>
-      <label class="lab">状态</label>
-      <Select style="width:200px" class="sele">
-        <Option v-for="(item,key) in list3" :key="key" :value="item.dictLabel">{{item.dictLabel}}</Option>
-      </Select>
-      <el-button type="primary" icon="el-icon-search" style="margin-left:20px;" @click="showNr">搜索</el-button>
-      <el-button plain icon="el-icon-refresh">重置</el-button>
-    </div>
-    <el-row class="el_row_1">
-      <el-button type="primary" icon="el-icon-plus" @click="dialogFormVisible = true">新增</el-button>
-      <el-button type="success" icon="el-icon-edit">修改</el-button>
-      <el-button type="danger" icon="el-icon-delete">删除</el-button>
-    </el-row>
-    <el-table
-      ref="multipleTable"
-      :data="jb"
-      tooltip-effect="dark"
-      style="width: 100%"
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column label="序号" width="120">
-        <template slot-scope="scope">{{ scope.row.id }}</template>
-      </el-table-column>
-      <el-table-column prop="buildingNo" label="宿舍栋号"></el-table-column>
-      <el-table-column prop="storey" label="楼层"></el-table-column>
-      <el-table-column prop="dormitoryNo" label="宿舍号"></el-table-column>
-      <el-table-column prop="dormitoryTeacherName" label="宿管老师"></el-table-column>
-      <el-table-column prop="createTime" label="创建时间"></el-table-column>
-      <el-table-column prop="modifyTime" label="修改时间"></el-table-column>
-      <el-table-column prop="status" label="状态">
-        <template slot-scope="scope">
+    <!-- 面包屑导航区域 -->
+    <el-breadcrumb separator="/">
+      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item>基础数据</el-breadcrumb-item>
+      <el-breadcrumb-item>班级管理</el-breadcrumb-item>
+    </el-breadcrumb>
+
+    <!-- 卡片视图区域 -->
+    <el-card>
+      <!-- 搜索与添加区域 -->
+      <el-row :gutter="30">
+        <el-col :span="5">
+          <el-input
+            placeholder="请输入学员名称"
+            v-model="queryInfo.studentName"
+            clearable
+            @clear="getUserList"
+          >
+            <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
+          </el-input>
+        </el-col>
+        <el-col :span="5">
+          <el-input
+            placeholder="请输入学号"
+            v-model="queryInfo.studentNo"
+            clearable
+            @clear="getUserList"
+          >
+            <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
+          </el-input>
+        </el-col>
+        <el-col :span="5">
           <div>
-            <div style="position:relative;z-index:999">
-              <el-switch v-model="scope.row.status" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
-            </div>
+            <!-- <el-select slot="prepend" placeholder="请选择">
+              <el-option label="正常" value="1"></el-option>
+              <el-option label="停用" value="2"></el-option>
+            </el-select>-->
           </div>
-        </template>
-      </el-table-column>
+        </el-col>
+        <el-col :span="8">
+          <el-button type="primary" @click="addDialogVisible = true">新增</el-button>
+          <el-button type="success" icon="el-icon-edit" disabled>修改</el-button>
+          <el-button type="danger" icon="el-icon-delete" disabled>删除</el-button>
+        </el-col>
+      </el-row>
 
-      <el-table-column label="操作">
-        <template slot-scope="scope">
-          <el-button type="success" icon="el-icon-edit" circle @click="update(scope.row.id)"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle @click="Delete(scope.row.id)"></el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <!-- 班级列表区域 -->
+      <el-table :data="userlist" border stripe>
+        <el-table-column label="#" type="index"></el-table-column>
+        <el-table-column label="序号" prop="id"></el-table-column>
+        <el-table-column label="学员姓名" prop="studentName"></el-table-column>
+        <el-table-column label="学号" prop="studentNo"></el-table-column>
+        <el-table-column label="班级" prop="className"></el-table-column>
+        <el-table-column label="手机号" prop="phone"></el-table-column>
+        <el-table-column label="性别" prop="sex"></el-table-column>
+        <el-table-column label="家长姓名" prop="parentName"></el-table-column>
+        <el-table-column label="家长电话" prop="parentPhone"></el-table-column>
+        <el-table-column label="宿舍栋号" prop="buildingNo"></el-table-column>
+        <el-table-column label="楼层" prop="storey"></el-table-column>
+        <el-table-column label="宿舍号" prop="dormitoryNo"></el-table-column>
+        <el-table-column label="创建时间" prop="createTime"></el-table-column>
+        <el-table-column label="状态">
+          <template slot-scope="scope">
+            <el-switch v-model="scope.row.status" @change="userStateChanged(scope.row)"></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <!-- 修改 -->
+            <el-tooltip effect="dark" content="修改" placement="top" :enterable="false">
+              <el-button
+                type="primary"
+                icon="el-icon-edit"
+                circle
+                @click="showEditDialog(scope.row.id)"
+              ></el-button>
+            </el-tooltip>
+            <!-- 删除 -->
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              circle
+              @click="removeUserById(scope.row.id)"
+            ></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页区域 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="queryInfo.pageNum"
+        :page-sizes="[1, 2, 5, 10]"
+        :page-size="queryInfo.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      ></el-pagination>
+    </el-card>
 
-    <!-- 增加 -->
-    <el-dialog title="修改宿舍信息" :visible.sync="dialogFormVisible">
-      <el-form ref="from2" :model="from" label-width="80px">
-        <el-form-item label="宿舍栋号">
-          <el-select v-model="from.buildingNo" placeholder="请选择" style="width:350px;">
-            <el-option
-              v-for="(item, key) in list"
-              :key="key"
-              :value="item.dictSort"
-            >{{ item.dictLabel }}</el-option>
-          </el-select>
+    <!--添加班级列表的对话框 -->
+    <el-dialog title="添加班级信息" :visible.sync="addDialogVisible" width="40%" @close="addDialogClosed">
+      <!-- 内容主体区域 -->
+      <el-form :model="addForm" :rules="addFormRules" ref="addFormRef" label-width="100px">
+        <el-form-item label="班级名称" prop="className">
+          <el-input v-model="addForm.className"></el-input>
         </el-form-item>
-        <el-form-item label="楼层">
-          <el-select v-model="from.storey" placeholder="请选择" style="width:350px;">
-            <el-option
-              v-for="(item, key) in list2"
-              :key="key"
-              :value="item.dictSort"
-            >{{ item.dictLabel }}</el-option>
-          </el-select>
-        </el-form-item>
-        <label class="lab">宿舍号</label>
-        <Input
-          placeholder="请输入宿舍号"
-          style="width: 350px;margin-left:6px;margin-bottom: 15px;height: 40px;"
-          v-model="from.dormitoryNo"
-        />
-        <el-form-item label="宿管老师">
-          <el-select v-model="from.dormitoryTeacherId" placeholder="请选择" style="width:350px;">
-            <el-option v-for="(item, key) in list4" :key="key" :value="item.id">{{ item.username }}</el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmit">确定</el-button>
-          <el-button @click="xsqx">取消</el-button>
+        <el-form-item label="班主任" prop="classTeacherName">
+          <el-input v-model="addForm.classTeacherName" disabled></el-input>
         </el-form-item>
       </el-form>
+      <!--底部区域 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
+      </span>
     </el-dialog>
 
-    <!-- 修改 -->
-    <el-dialog title="修改宿舍信息" :visible.sync="dialogFormVisible2">
-      <el-form ref="from2" :model="from2" label-width="80px">
-        <el-form-item label="宿舍栋号">
-          <el-select v-model="from2.buildingNo" placeholder="请选择" style="width:350px;" disabled>
-            <el-option
-              v-for="(item, key) in list2"
-              :key="key"
-              :value="item.buildingNo"
-              :label="item.buildingNo"
-            >{{ item.buildingNo }}</el-option>
-          </el-select>
+    <!-- 修改班级列表的对话框 -->
+    <el-dialog
+      title="修改班级信息"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClosed"
+    >
+      <el-form ref="editFormRef" :model="editForm" :rules="editFormRules" label-width="70px">
+        <el-form-item label="班级名称">
+          <el-input v-model="editForm.className" disabled></el-input>
         </el-form-item>
-        <el-form-item label="楼层">
-          <el-select v-model="from2.storey" placeholder="请选择" style="width:350px;" disabled>
-            <el-option
-              v-for="(item, key) in list2"
-              :key="key"
-              :value="item.storey"
-              :label="item.storey"
-            >{{ item.storey }}</el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="宿舍号">
-          <el-select v-model="from2.dormitoryNo" placeholder="请选择" style="width:350px;" disabled>
-            <el-option
-              v-for="(item, key) in list2"
-              :key="key"
-              :value="item.dormitoryNo"
-              :label="item.dormitoryNo"
-            >{{ item.dormitoryNo }}</el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="宿管老师">
-          <el-select v-model="from2.dormitoryTeacherId" placeholder="请选择" style="width:350px;">
-            <el-option
-              v-for="(item, key) in list4"
-              :key="key"
-              :value="item.id"
-              :label="item.dormitoryTeacherName"
-            >{{ item.username }}</el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="onSubmit2">确定</el-button>
-          <el-button @click="xsqx">取消</el-button>
+        <el-form-item label="班主任">
+          <el-input v-model="editForm.classTeacherName"></el-input>
         </el-form-item>
       </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="deitUserInfo">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
+
 <script>
 export default {
   data() {
     return {
-      pageNum: 1,
-      pageSize: 10,
-      dialogFormVisible2: false,
-      dialogFormVisible: false,
-      list: [],
-      list2: [],
-      list3: [],
-      list4: [],
-      jb: [],
-      multipleSelection: [],
-      from2: {
-        dormitoryTeacherId: "",
-        username: []
+      //获取用户列表的参数对象
+      queryInfo: {
+        //当前的页数
+        pageNum: 1,
+        //当前显示多少条数据
+        pageSize: 10,
+        total: 38,
+        totalPage: 4
       },
-      from: {
-        buildingNo: [],
-        storey: [],
-        dormitoryTeacherId: [],
-        dormitoryNo: ""
-      }
-    };
+      //控制添加班级对话框的显示与隐藏
+      addDialogVisible: false,
+      //添加班级列表的表单数据
+      addForm: {
+        // className: '',
+        classTeacherName: "admin",
+        className: "",
+        classTeacherId: 1,
+        status: '1'
+      },
+      //添加表单的验证规则对象
+      addFormRules: {
+        className: [
+          { required: true, message: '请输入班级名称', trigger: 'blur' },
+          {
+            min: 1,
+            max: 10,
+            message: '班级名称到1~10个字符之间',
+            trigger: 'blur'
+          }
+        ],
+        classTeacherName: [
+          { required: true, message: '请输入班主任名称', trigger: 'blur' },
+          {
+            min: 1,
+            max: 10,
+            message: '班主任名称到1~10个字符之间',
+            trigger: 'blur'
+          }
+        ]
+      },
+      userlist: [],
+      total: 0,
+      //控制修改班级列表的显示与隐藏
+      editDialogVisible: false,
+      //查询到的用户信息对象
+      editForm: {
+        // className: '',
+        // classTeacherId: 0,
+        classTeacherName: "",
+        // createTime: '',
+        // id: 0,
+        // modifyTime: '',
+        // status: ''
+      },
+      editFormRules: {}
+    }
   },
-  mounted() {
-    this.loadData();
-    this.loadData2();
-    this.loadData3();
-    this.loadData4();
-    this.show();
+  created() {
+    this.getUserList()
   },
   methods: {
-    // 宿舍栋号
-    loadData() {
-      var that = this;
-      this.axios({
-        url:
-          "http://122.112.253.28:8095/prod-api/sys/dict/detail/dictType/sys_building",
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
+    async getUserList() {
+      const { data: res } = await this.$http.get('/basedata/bstudent/list', {
+        params: this.queryInfo
       })
-        .then(response => {
-          console.log(response.data);
-          that.list = response.data.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      if (res.code !== 200) {
+        return this.$message.error('获取班级列表失败!')
+      }
+      this.userlist = res.data.list
+      this.total = res.data.total
+      console.log(res)
     },
-    // 楼层
-    loadData2() {
-      var that = this;
-      this.axios({
-        url:
-          "http://122.112.253.28:8095/prod-api/sys/dict/detail/dictType/sys_storey",
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      })
-        .then(response => {
-          console.log(response.data);
-          that.list2 = response.data.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+    //监听 pagesize 改变的事件
+    handleSizeChange(newSize) {
+      // console.log(newSize);
+      this.queryInfo.pageSize = newSize
+      this.getUserList()
     },
-    // 状态
-    loadData3() {
-      var that = this;
-      this.axios({
-        url:
-          "http://122.112.253.28:8095/prod-api/sys/dict/detail/dictType/sys_normal_disable",
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      })
-        .then(response => {
-          console.log(response.data);
-          that.list3 = response.data.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+    // 监听 页码值 改变的事件
+    handleCurrentChange(newPage) {
+      console.log(newPage)
+      this.queryInfo.pageNum = newPage
+      this.getUserList()
     },
-    // 显示
-    show() {
-      var that = this;
-      this.axios({
-        // id:that.jb.id,
-        url: `http://122.112.253.28:8095/prod-api/basedata/bdormitory/list?pageNum=1&pageSize=10`,
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      })
-        .then(response => {
-          that.jb = response.data.data.list;
-        })
-        .catch(error => {});
-    },
-    // 宿管老师
-    loadData4() {
-      var that = this;
-      this.axios({
-        url: "http://122.112.253.28:8095/prod-api/sys/user/getDorTeacherList",
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      })
-        .then(response => {
-          console.log(response.data);
-          that.list4 = response.data.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    },
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    },
-    // 删除
-    Delete(id) {
-      var that = this;
-      this.axios({
-        url:
-          "http://122.112.253.28:8095/prod-api/basedata/bdormitory/deleteByIds/" +
-          id,
-        method: "DELETE",
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      }).then(response => {
-        // console.log(response)
-        if (response.data.code == "200") {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
-          this.show();
-        } else {
-          this.$message({
-            type: "info",
-            message: "删除失败"
-          });
-        }
-      });
-    },
-    // 获取id内数据内容
-    update(id) {
-      // console.log(id)
-      this.dialogFormVisible2 = true;
-      var that = this;
-      this.axios({
-        url: `http://122.112.253.28:8095/prod-api/basedata/bdormitory/${id}`,
-        method: "GET",
+    //监听 switch开关状态的改变
+    async userStateChanged(userinfo) {
+      console.log(userinfo)
+      const { data: res } = await this.$http.put(
+        `/basedata/bclass/update/status/` ,
+         this.addForm
 
-        headers: {
-          Authorization: window.sessionStorage.token
-        }
-      })
-        .then(response => {
-          this.from2 = response.data.data;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      )
+      if (res.code !== 200) {
+        userinfo.code = !userinfo.code
+        return this.$message.error('更新用户状态失败!')
+      }
+      this.$message.success('更新用户成功')
     },
-    // 修改提交
-    onSubmit2() {
-      var that = this;
-      this.axios({
-        url: `http://122.112.253.28:8095/prod-api/basedata/bdormitory/update/${this.from2.id}`,
-        method: "PUT",
-        data: that.from2,
-        headers: {
-          Authorization: window.sessionStorage.token
+    //监听添加班级对话框的关闭事件
+    addDialogClosed() {
+      this.$refs.addFormRef.resetFields()
+    },
+    //点击按钮，添加新用户
+    addUser() {
+      this.$refs.addFormRef.validate(async valid => {
+        if (!valid) return
+        //可以发起添加用户的网络请求
+        const { data: res } = await this.$http.post(
+          '/basedata/bclass/create',
+          this.addForm
+        )
+        if (res.code !== 200) {
+          this.$message.errop('添加用户失败')
         }
+        this.$message.success('添加用户成功!')
+        //隐藏添加班级列表的对话框
+        this.addDialogVisible = false
+        //重新获取班级列表
+        this.getUserList()
       })
-        .then(response => {
-          // that.success(response.data.message);
-          if (response.data.code == "200") {
-            this.$message({
-              type: "success",
-              message: "修改成功"
-            });
-            this.from2 = {
-              name2: "",
-              region2: []
-            };
-            this.dialogFormVisible2 = false;
-            this.show();
-          } else {
-            this.$message({
-              type: "info",
-              message: "修改失败"
-            });
+    },
+    //展示编辑班级列表的对话框
+    async showEditDialog(id) {
+      // console.log(id);
+      const { data: res } = await this.$http.get('/basedata/bclass/' + id)
+      if (res.code !== 200) {
+        return this.$message.error('查询用户信息失败!')
+      }
+      this.editForm = res.data
+      this.editDialogVisible = true
+    },
+    //监听修改用户对话框的关闭事件
+    editDialogClosed() {
+      this.$refs.editFormRef.resetFields()
+    },
+    //修改用户信息并提交
+    deitUserInfo() {
+      this.$refs.editFormRef.validate(async valid => {
+        if (!valid) return
+        //发起修改用户信息的数据请求
+        const { data: res } = await this.$http.put(
+          '/basedata/bclass/update/' + this.editForm.id,
+          {
+            // className:this.editForm.className,
+            classTeacherName: this.editForm.classTeacherName
           }
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    },
-    xsqx() {
-      this.dialogFormVisible = false;
-      this.dialogFormVisible2 = false;
-    },
-    // 增加
-    onSubmit() {
-      var that = this;
-      this.axios({
-        url: "http://122.112.253.28:8095/prod-api/basedata/bdormitory/create",
-        method: "POST",
-        data: {
-          buildingNo: that.from.buildingNo,
-          storey: that.from.storey,
-          dormitoryNo: that.from.dormitoryNo,
-          dormitoryTeacherId: that.from.dormitoryTeacherId
-        },
-        headers: {
-          Authorization: window.sessionStorage.token
+        )
+        if (res.code !== 200) {
+          return this.$message.error('更新用户信息失败！')
         }
-      }).then(response => {
-        if (response.data.code == "200") {
-          this.$message({
-            type: "success",
-            message: "添加成功"
-          });
-          this.dialogFormVisible = false;
-          this.show();
-        } else {
-          this.$message({
-            type: "info",
-            message: "添加失败"
-          });
-        }
-      });
-
-      this.from = {
-        buildingNo: "",
-        storey: "",
-        dormitoryTeacherId: "",
-        dormitoryNo: ""
-      };
-    },
-    // 查找
-    showNr(){
-      var that = this;
-      this.axios({
-        url: `http://122.112.253.28:8095/prod-api/basedata/bdormitory/list?pageNum=1&pageSize=10&buildingNo=${that.buildingNo}&storey=${that.storey}&dormitoryNo=${that.dormitoryNo}`,
-        method: "GET",
-        headers: {
-          Authorization: window.sessionStorage.token
-        },
-        data: {
-          buildingNo:that.buildingNo,
-          storey: that.storey,
-          dormitoryNo: that.dormitoryNo
-        }
+        //关闭对话框
+        this.editDialogVisible = false
+        //刷新数据列表
+        this.getUserList()
+        //提升修改成功
+        this.$message.success('更新用户信息成功')
       })
-        .then(response => {
-          that.jb = response.data.data.list;
-        })
-        .catch(error => {
-          console.log(error);
-        });
+    },
+    //根据Id删除
+    async removeUserById(id) {
+      //弹框询问用户是否删除数据
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除该列表, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(err => err)
+      // console.log(confirmResult);
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('已取消删除')
+      }
+      const { data: res } = await this.$http.delete(
+        '/basedata/bclass/deleteByIds/' + id
+      )
+      if (res.code !== 200) {
+        return this.$message.error('删除用户失败！')
+      }
+      this.$message.success('删除用户成功!')
+      this.getUserList()
     }
   }
-};
+}
 </script>
-<style scoped>
-.nav-top {
-  margin: 32px;
-  height: 45px;
-}
-.lab {
-  width: 68px;
-  font-size: 14px;
-  color: #606266;
-  padding: 0 12px 0 0;
-  margin-left: 20px;
-}
-.el_row_1 {
-  margin: 0 32px;
-}
+<style lang="less" scoped>
 </style>
